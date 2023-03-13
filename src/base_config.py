@@ -12,14 +12,15 @@ from torch.optim.optimizer import Optimizer
 class Config:
     num_workers: int
     seed: int
-    cls_losses: tp.Mapping
-    seg_losses: tp.Mapping
+    ctc_loss: tp.Callable
+    acc_loss: tp.Callable
     device: str
     optimizer: type(Optimizer)
     optimizer_kwargs: tp.Mapping
     scheduler: tp.Any
     scheduler_kwargs: tp.Mapping
     df_path: str
+    backgrounds_dir: str
     train_images_path: str
     train_size: int
     img_width: int
@@ -30,6 +31,7 @@ class Config:
     n_epochs: int
     early_stop_patience: int
     experiment_name: str
+    pretrain_name: str
     model_kwargs: tp.Mapping
     log_metrics: tp.List[str]
     valid_metric: str
@@ -53,3 +55,4 @@ class Config:
 
     def __post_init__(self):
         self.checkpoints_dir = os.path.join("./weights", self.experiment_name)  # noqa: WPS601
+        self.gen_checkpoints_dir = os.path.join("./gen_weights", self.experiment_name)  # noqa: WPS601
