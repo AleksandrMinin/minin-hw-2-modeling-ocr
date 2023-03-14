@@ -1,7 +1,5 @@
 import typing as tp
-from typing import Any
 from catalyst.core.logger import ILogger
-from catalyst.core.runner import IRunner
 from clearml import Task
 import pandas as pd
 

@@ -1,8 +1,5 @@
 import logging
-import typing as tp
-
 import torch
-from torch.nn import CTCLoss
 from catalyst import dl
 from catalyst.engines.torch import CPUEngine, GPUEngine
 

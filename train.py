@@ -1,8 +1,9 @@
 import logging
+import typing as tp
 
 import torch
-from torch.nn import CTCLoss
 from catalyst import dl
+from catalyst.core.callback import Callback
 from catalyst.engines.torch import CPUEngine, GPUEngine
 
 from src.config import config
@@ -14,79 +15,60 @@ from src.crnn import CRNN
 from src.constants import BEST_GEN_MODEL
 
 
-train_callbacks = [
-    dl.CriterionCallback(
-        input_key="output",             
-        target_key="target",     
-        metric_key="loss",
-        criterion_key="ctc_loss_fn",
-    ),
-    dl.BatchTransformCallback(
-        transform=get_code,
-        scope="on_batch_end",
-        input_key="output",
-        output_key="pred_code",
-    ),
-    dl.BatchTransformCallback(
-        transform=lambda x : torch.LongTensor(x[0]),
-        scope="on_batch_end",
-        input_key="target",
-        output_key="target_code",
-    ),
-    dl.CriterionCallback(
-        input_key="pred_code",             
-        target_key="target_code",     
-        metric_key="acc_loss",
-        criterion_key="acc_loss_fn",
-    ),
-    dl.CheckpointCallback(
-        logdir=config.checkpoints_dir,
-        loader_key="valid",
-        metric_key=config.valid_metric,
-        minimize=config.minimize_metric,
-    ),
-#     dl.EarlyStoppingCallback(
-#         patience=config.early_stop_patience,
-#         loader_key="valid",
-#         metric_key=config.valid_metric,
-#         minimize=config.minimize_metric,
-#     ),
-]
-
-test_callbacks = [
-    dl.CriterionCallback(
-        input_key="output",             
-        target_key="target",     
-        metric_key="loss",
-        criterion_key="ctc_loss_fn",
-    ),
-    dl.BatchTransformCallback(
-        transform=get_code,
-        scope="on_batch_end",
-        input_key="output",
-        output_key="pred_code",
-    ),
-    dl.BatchTransformCallback(
-        transform=lambda x : torch.LongTensor(x[0]),
-        scope="on_batch_end",
-        input_key="target",
-        output_key="target_code",
-    ),
-    dl.CriterionCallback(
-        input_key="target_code",
-        target_key="target_code",
-        metric_key="acc_loss",
-        criterion_key="acc_loss_fn",
-    ),
-]
+def get_base_callbacks() -> tp.List[Callback]:
+    return [
+        dl.CriterionCallback(
+            input_key="output",             
+            target_key="target",     
+            metric_key="loss",
+            criterion_key="ctc_loss_fn",
+        ),
+        dl.BatchTransformCallback(
+            transform=get_code,
+            scope="on_batch_end",
+            input_key="output",
+            output_key="pred_code",
+        ),
+        dl.BatchTransformCallback(
+            transform=lambda x : torch.LongTensor(x[0]),
+            scope="on_batch_end",
+            input_key="target",
+            output_key="target_code",
+        ),
+        dl.CriterionCallback(
+            input_key="target_code",
+            target_key="target_code",
+            metric_key="acc_loss",
+            criterion_key="acc_loss_fn",
+        ),
+    ]
 
 
-def train(config: Config, clearml: bool = True):
-    loaders, infer_loader = get_loaders(config)
-    
-    state_dict = torch.load(BEST_GEN_MODEL)
+def get_train_callbacks() -> tp.List[Callback]:
+    callbacks = get_base_callbacks()
+    callbacks.extend(
+        [
+            dl.CheckpointCallback(
+                logdir=config.checkpoints_dir,
+                loader_key="valid",
+                metric_key=config.valid_metric,
+                minimize=config.minimize_metric,
+            ),
+        ],
+    )
+    return callbacks
+
+
+def train(
+    config: Config, 
+    clearml: bool = True, 
+    pretrained: bool = True,
+):
+    loaders, infer_loader = get_loaders(config)  
     model = CRNN(**config.model_kwargs)
-    model.load_state_dict(state_dict)
+    if pretrained:
+        state_dict = torch.load(BEST_GEN_MODEL)
+        model.load_state_dict(state_dict)
     
     optimizer = config.optimizer(params=model.parameters(), **config.optimizer_kwargs)
     scheduler = config.scheduler(optimizer=optimizer, **config.scheduler_kwargs)
@@ -117,9 +99,9 @@ def train(config: Config, clearml: bool = True):
         engine=engine,
         criterion=criterion,
         optimizer=optimizer,
-        #scheduler=scheduler,
+        scheduler=scheduler,
         loaders=loaders,
-        callbacks=train_callbacks,
+        callbacks=get_train_callbacks(),
         loggers=loggers,
         num_epochs=config.n_epochs,
         valid_loader="valid",
@@ -140,7 +122,7 @@ def train(config: Config, clearml: bool = True):
         engine=engine,
         criterion=criterion,
         loaders=infer_loader,
-        callbacks=test_callbacks,
+        callbacks=get_base_callbacks(),
         loggers=None,
         valid_loader="infer",
         verbose=True,

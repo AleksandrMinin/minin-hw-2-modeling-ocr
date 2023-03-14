@@ -12,6 +12,7 @@ from src.losses import MyCTCLoss, MyAccuracy
 
 EXP_NUM = '2'
 NUM_CLASSES = 11
+OUTPUT_LEN = 63
 N_EPOCHS = 100
 BATCH_SIZE = 1
 TRAIN_SIZE = 0.8
