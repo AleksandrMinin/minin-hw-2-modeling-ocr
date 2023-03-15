@@ -19,13 +19,14 @@ def set_global_seed(seed: int):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    
+
+
 def get_code(output: torch.Tensor) -> torch.Tensor:
-    pred = torch.argmax(output, dim=2).permute(1, 0).detach().cpu().numpy()[0]
-    pred_code = [] 
-    for i in range(len(pred)):
-        if pred[i] != 0: 
+    pred = torch.argmax(output, dim=2).permute(1, 0)
+    pred = pred.detach().cpu().numpy()[0]
+    pred_code = []
+    for i in range(len(pred)):  # noqa: WPS518
+        if pred[i] != 0:
             if i == 0 or (pred[i - 1] != pred[i]):
                 pred_code.append(pred[i])
-    pred_code = torch.LongTensor(pred_code)
-    return pred_code
+    return torch.LongTensor(pred_code)

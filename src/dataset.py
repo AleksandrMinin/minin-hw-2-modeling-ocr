@@ -14,6 +14,7 @@ from src.tools import read_rgb_img
 
 logger = logging.getLogger(__name__)
 
+
 class BarcodeDataset(Dataset):
     def __init__(self, df: pd.DataFrame, transforms: albu.Compose, config: Config):
         self._df = df
@@ -27,7 +28,7 @@ class BarcodeDataset(Dataset):
         image = transformed["image"] / 255.0
         image = np.transpose(image, (2, 0, 1)).astype(np.float32)
         target = self._df.iloc[idx][1]
-        target = target.replace(' ', '')
+        target = target.replace(" ", "")
         target = list(map(int, target))
         target = [n + 1 for n in target]
         return {"image": image, "target": (target, len(target))}
@@ -36,7 +37,7 @@ class BarcodeDataset(Dataset):
         return len(self._df)
 
 
-def get_loaders(                                                           # noqa: WPS210
+def get_loaders(
     config: Config,
 ) -> tp.Tuple[tp.OrderedDict[str, DataLoader], tp.Dict[str, DataLoader]]:  # noqa: WPS221
     train_dataset, valid_dataset, test_dataset = get_datasets(config)
@@ -71,7 +72,7 @@ def get_loaders(                                                           # noq
     return {"train": train_loader, "valid": valid_loader}, {"infer": test_loader}
 
 
-def get_datasets(config: Config) -> tp.Tuple[Dataset, Dataset, Dataset]:  # noqa: WPS210
+def get_datasets(config: Config) -> tp.Tuple[Dataset, Dataset, Dataset]:
     train_df, valid_df, test_df = _get_dataframes(config)
     train_augs = config.train_augmentation
     test_augs = config.val_augmentation
@@ -81,7 +82,7 @@ def get_datasets(config: Config) -> tp.Tuple[Dataset, Dataset, Dataset]:  # noqa
     return train_dataset, valid_dataset, test_dataset
 
 
-def _get_dataframes(config: Config) -> tp.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:  # noqa: WPS210
+def _get_dataframes(config: Config) -> tp.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df = pd.read_csv(config.df_path, sep="\t")
     train_df, other_df = train_test_split(df, train_size=config.train_size, random_state=config.seed, shuffle=True)
     valid_df, test_df = train_test_split(other_df, train_size=0.5, shuffle=False)

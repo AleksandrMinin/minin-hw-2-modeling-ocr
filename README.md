@@ -80,9 +80,8 @@ CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 python train.py
 1. [pretrain_1](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/36642f3b700146f08b85bb1eca66a4b0/output/execution)
 2. [experiment_1](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/e09e9f8b846f4584836201587e15fdb9/output/execution)
 3. [experiment_2](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/4813cb246310461aa472ee0ae26218e0/output/execution)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!### Тестирование модели
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Результаты сегментации лучшей модели можно посмотреть в  /notebooks/check_pred_mask.ipynb
+4. [pretrain_3](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/893548adf1a44a1cb1d71b628beb6057/output/execution)
+5. [experiment_3](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/5fbc6dd692a44930a1e9be150856c1a3/output/execution)
 
 ### DVC
 #### Добавление модели в DVC
@@ -124,7 +123,7 @@ CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 python train.py
    ```
    PYTHONPATH=. pytest tests -p no:warnings
    ```
-### Запуск тестов на pytest
+### Model to ONNX
 Перенос модели в формат ONNX:
    ```
    python -W ignore::UserWarning model_to_onnx.py

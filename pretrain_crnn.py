@@ -1,6 +1,8 @@
 import logging
+import typing as tp
 import torch
 from catalyst import dl
+from catalyst.core.callback import Callback
 from catalyst.engines.torch import CPUEngine, GPUEngine
 
 from src.config import config
@@ -42,13 +44,25 @@ train_callbacks = [
         metric_key=config.valid_metric,
         minimize=config.minimize_metric,
     ),
+    dl.EarlyStoppingCallback(
+        patience=config.early_stop_patience,
+        loader_key="valid",
+        metric_key=config.valid_metric,
+        minimize=config.minimize_metric,
+    ),
 ]
 
 
-def train(config: Config, clearml: bool = True):
+def train(
+    config: Config, 
+    clearml: bool = True,
+    train_size: int = 300,
+    valid_size: int = 100,
+    num_epochs: int = 100
+):
     train_loader = torch.utils.data.DataLoader(
         GenBarcodeDataset(
-            epoch_size=300,
+            epoch_size=train_size,
             backgrounds_dir=config.backgrounds_dir,
             transforms=config.train_augmentation,
         ), 
@@ -56,7 +70,7 @@ def train(config: Config, clearml: bool = True):
     )
     valid_loader = torch.utils.data.DataLoader(
         GenBarcodeDataset(
-            epoch_size=100,
+            epoch_size=valid_size,
             backgrounds_dir=config.backgrounds_dir,
             transforms=config.val_augmentation,
         ), 
@@ -94,7 +108,7 @@ def train(config: Config, clearml: bool = True):
         loaders=loaders,
         callbacks=train_callbacks,
         loggers=loggers,
-        num_epochs=25,
+        num_epochs=num_epochs,
         valid_loader="valid",
         valid_metric=config.valid_metric,
         minimize_valid_metric=config.minimize_metric,

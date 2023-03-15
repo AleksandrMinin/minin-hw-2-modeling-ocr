@@ -1,6 +1,5 @@
 import logging
 import typing as tp
-
 import torch
 from catalyst import dl
 from catalyst.core.callback import Callback
@@ -36,7 +35,7 @@ def get_base_callbacks() -> tp.List[Callback]:
             output_key="target_code",
         ),
         dl.CriterionCallback(
-            input_key="target_code",
+            input_key="pred_code",
             target_key="target_code",
             metric_key="acc_loss",
             criterion_key="acc_loss_fn",

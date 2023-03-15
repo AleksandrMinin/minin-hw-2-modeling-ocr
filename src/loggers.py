@@ -27,7 +27,7 @@ class ClearMLLogger(ILogger):
         )
         task.connect(config.to_dict())
         self.clearml_logger = task.get_logger()
-        
+
     @property
     def logger(self):
         return self.clearml_logger
@@ -36,7 +36,7 @@ class ClearMLLogger(ILogger):
         self,
         metrics: tp.Dict[str, float],
         scope: str,
-        runner: "IRunner",
+        runner: "IRunner",  # noqa: F821
         infer: bool = False,
     ):
         step = runner.sample_step if self.log_batch_metrics else runner.epoch_step
@@ -53,6 +53,9 @@ class ClearMLLogger(ILogger):
                     loader_key=runner.loader_key,
                 )
 
+    def flush_log(self):
+        self.logger.flush()
+
     def _report_scalar(self, title: str, mode: str, value: float, epoch: int):  # noqa: WPS110
         self.logger.report_scalar(
             title=title,
@@ -66,10 +69,7 @@ class ClearMLLogger(ILogger):
         for k in log_keys:
             self._report_scalar(k, loader_key, metrics[k], step)
 
-    def _log_infer_metrics(self, metrics: tp.Dict[str, float]):  # noqa: WPS210
+    def _log_infer_metrics(self, metrics: tp.Dict[str, float]):
         test_results = pd.DataFrame.from_dict(metrics, orient="index", columns=[""])
         test_results = test_results.astype("float")
         self.logger.report_table(title="Test Results", series="Test Results", iteration=0, table_plot=test_results)
-
-    def flush_log(self):
-        self.logger.flush()

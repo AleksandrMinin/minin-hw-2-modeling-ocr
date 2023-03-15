@@ -5,26 +5,23 @@ import torch
 
 class CRNN(torch.nn.Module):
     """Реализует CRNN модель для OCR задачи.
-    
     CNN-backbone берется из timm, в RNN части стоит GRU.
     """
 
     def __init__(
-            self, 
-            cnn_backbone_name: str,
-            cnn_backbone_pretrained: bool,
-            cnn_output_size: int,
-            rnn_features_num: int,
-            rnn_dropout: float,
-            rnn_bidirectional: bool,
-            rnn_num_layers: int,
-            num_classes: int,
-            
+        self,
+        cnn_backbone_name: str,
+        cnn_backbone_pretrained: bool,
+        cnn_output_size: int,
+        rnn_features_num: int,
+        rnn_dropout: float,
+        rnn_bidirectional: bool,
+        rnn_num_layers: int,
+        num_classes: int,
     ) -> None:
         """
         Parameters: (лучше вынести в config, в этом примере перечислены параметры для простоты)
-        
-            cnn_backbone_name: имя backbone-а 
+            cnn_backbone_name: имя backbone-а
             cnn_backbone_pretrained: True, чтобы брать предобученный бэкбон, иначе False
             cnn_output_size: размер выходного тензора из CNN (можно сделать прогон в init-е и посчитать)
             rnn_features_num: размер выхода каждого GRU слоя
@@ -35,7 +32,7 @@ class CRNN(torch.nn.Module):
         """
         super().__init__()
 
-        # Предобученный бекбон для фичей. Можно обрезать, не обязательно использовать всю глубину. 
+        # Предобученный бекбон для фичей. Можно обрезать, не обязательно использовать всю глубину.
         self.backbone = timm.create_model(
             cnn_backbone_name, pretrained=cnn_backbone_pretrained,
         )
@@ -80,5 +77,4 @@ class CRNN(torch.nn.Module):
         cnn_features = self.gate(cnn_features)
         rnn_output, _ = self.rnn(cnn_features)
         logits = self.fc(rnn_output)
-        output = self.softmax(logits)
-        return output
+        return self.softmax(logits)

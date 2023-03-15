@@ -1,15 +1,15 @@
 image: python:3.8
 
 stages:
-  #- lint
+  - lint
   - test
 
-# lint-job:
-#   stage: lint
-#   script:
-#     - python -m pip install wemake-python-styleguide==0.16.1
-#     - flake8 src/
-#   tags: ['cvr-nov22']
+lint-job:
+  stage: lint
+  script:
+    - python -m pip install wemake-python-styleguide==0.16.1
+    - flake8 src/
+  tags: ['cvr-nov22']
 
 test-job:
   stage: test
@@ -18,4 +18,3 @@ test-job:
     - pip install -r requirements.txt
     - PYTHONPATH=. pytest tests -p no:warnings
   tags: ['cvr-nov22']
-
