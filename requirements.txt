@@ -1,5 +1,5 @@
 albumentations==1.0.3
-python-barcode==0.14.0.post38+g03bd237
+python-barcode==0.14.0
 catalyst==22.04
 clearml==1.6.2
 dvc[ssh]==2.34.2
