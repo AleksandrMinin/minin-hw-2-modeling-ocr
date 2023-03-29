@@ -12,6 +12,7 @@ from torch.optim.optimizer import Optimizer
 class Config:
     num_workers: int
     seed: int
+    max_code_len: int
     ctc_loss: tp.Callable
     acc_loss: tp.Callable
     device: str

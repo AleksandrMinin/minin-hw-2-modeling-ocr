@@ -57,9 +57,9 @@ class GenBarcodeDataset(torch.utils.data.Dataset):
         image = np.transpose(image, (2, 0, 1)).astype(np.float32)
         fullcode = list(map(int, fullcode))
         # прибавляем 1 ко всем цифрам штрих-кода, чтобы при обучении разделителем был 0
-        fullcode = [n + 1 for n in fullcode]
+        target = np.array([n + 1 for n in fullcode] + [0] * (14 - len(fullcode)))
         
-        return {"image": image, "target": (fullcode, len(fullcode))}
+        return {"image": image, "target": target, "target_len": len(target)}
     
     def __len__(self):
         return self.epoch_size

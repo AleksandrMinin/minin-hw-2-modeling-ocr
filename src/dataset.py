@@ -30,8 +30,8 @@ class BarcodeDataset(Dataset):
         target = self._df.iloc[idx][1]
         target = target.replace(" ", "")
         target = list(map(int, target))
-        target = [n + 1 for n in target]
-        return {"image": image, "target": (target, len(target))}
+        target = np.array([n + 1 for n in target] + [0] * (self._config.max_code_len - len(target)))
+        return {"image": image, "target": target, "target_len": len(target)}
 
     def __len__(self):
         return len(self._df)

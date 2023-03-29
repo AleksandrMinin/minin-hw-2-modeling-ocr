@@ -82,6 +82,8 @@ CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 python train.py
 3. [experiment_2](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/4813cb246310461aa472ee0ae26218e0/output/execution)
 4. [pretrain_3](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/893548adf1a44a1cb1d71b628beb6057/output/execution)
 5. [experiment_3](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/5fbc6dd692a44930a1e9be150856c1a3/output/execution)
+6.[pretrain_4](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/ab092967fdbc47f39dc84331513fddd8/output/execution)
+7.[experiment_4](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/2c28186938344180bb7c9d7986d69a8e/output/execution)
 
 ### DVC
 #### Добавление модели в DVC

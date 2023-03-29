@@ -1,22 +1,23 @@
 from datetime import datetime
 import albumentations as albu
 import torch
+from torch.nn import CTCLoss
 from torch.optim.lr_scheduler import MultiStepLR
 import cv2
 
 from src.base_config import Config
 from src.constants import DF_PATH, BACKGROUNDS_DIR, TRAIN_IMAGES_PATH
-from src.losses import my_ctc_loss, my_accuracy
+from src.losses import my_accuracy
 
 
-EXP_NUM = "3"
+EXP_NUM = "4"
 NUM_CLASSES = 11
 OUTPUT_LEN = 63
 N_EPOCHS = 100
-BATCH_SIZE = 1
+BATCH_SIZE = 16
 TRAIN_SIZE = 0.8
 IMG_HEIGHT = 280
-IMG_WIDTH = 2000
+IMG_WIDTH = 1640
 
 date_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
@@ -24,25 +25,29 @@ train_augmentation = albu.Compose(
     [
         albu.MotionBlur(blur_limit=15, p=0.5),
         albu.GaussianBlur(),
-        albu.Resize(height=IMG_HEIGHT, width=IMG_WIDTH),
-        albu.Compose(
-            [
-                albu.PadIfNeeded(
-                    min_height=int(1.5 * IMG_HEIGHT),
-                    min_width=int(1.5 * IMG_WIDTH),
-                    border_mode=cv2.BORDER_CONSTANT,
-                    p=1,
-                ),
-                albu.Rotate(limit=5, p=1),
-            ],
-            p=0.3,
+        albu.SmallestMaxSize(max_size=IMG_HEIGHT),
+        albu.CropAndPad(percent=(-0.5, 0, 0, 0)),
+        albu.PadIfNeeded(
+            min_height=IMG_HEIGHT,
+            min_width=IMG_WIDTH,
+            position="random",
+            border_mode=cv2.BORDER_CONSTANT,
+            p=1,       
         ),
         albu.Resize(height=IMG_HEIGHT, width=IMG_WIDTH),
     ])
 
-
 val_augmentation = albu.Compose(
     [
+        albu.SmallestMaxSize(max_size=IMG_HEIGHT),
+        albu.CropAndPad(percent=(-0.5, 0, 0, 0)),
+        albu.PadIfNeeded(
+            min_height=IMG_HEIGHT, 
+            min_width=IMG_WIDTH,
+            border_mode=cv2.BORDER_CONSTANT,
+            position="top_left",
+            p=1,       
+        ),
         albu.Resize(height=IMG_HEIGHT, width=IMG_WIDTH),
     ])
 
@@ -50,7 +55,8 @@ val_augmentation = albu.Compose(
 config = Config(
     num_workers=6,
     seed=42,
-    ctc_loss=my_ctc_loss,
+    max_code_len=14,
+    ctc_loss=CTCLoss(),
     acc_loss=my_accuracy,
     device="cuda",
     optimizer=torch.optim.AdamW,

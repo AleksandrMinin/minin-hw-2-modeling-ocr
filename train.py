@@ -12,34 +12,35 @@ from src.dataset import get_loaders
 from src.loggers import ClearMLLogger
 from src.crnn import CRNN
 from src.constants import BEST_GEN_MODEL
+from src.runners import SupervisedOCRRunner
 
 
 def get_base_callbacks() -> tp.List[Callback]:
     return [
         dl.CriterionCallback(
-            input_key="output",             
-            target_key="target",     
+            input_key=dict(output="log_probs", output_size="input_lengths"),           
+            target_key=dict(target="targets", target_len="target_lengths"),     
             metric_key="loss",
             criterion_key="ctc_loss_fn",
         ),
-        dl.BatchTransformCallback(
-            transform=get_code,
-            scope="on_batch_end",
-            input_key="output",
-            output_key="pred_code",
-        ),
-        dl.BatchTransformCallback(
-            transform=lambda x : torch.LongTensor(x[0]),
-            scope="on_batch_end",
-            input_key="target",
-            output_key="target_code",
-        ),
-        dl.CriterionCallback(
-            input_key="pred_code",
-            target_key="target_code",
-            metric_key="acc_loss",
-            criterion_key="acc_loss_fn",
-        ),
+#         dl.BatchTransformCallback(
+#             transform=get_code,
+#             scope="on_batch_end",
+#             input_key="output",
+#             output_key="pred_code",
+#         ),
+#         dl.BatchTransformCallback(
+#             transform=lambda x : torch.LongTensor(x[0]),
+#             scope="on_batch_end",
+#             input_key="target",
+#             output_key="target_code",
+#         ),
+#         dl.CriterionCallback(
+#             input_key="pred_code",
+#             target_key="target_code",
+#             metric_key="acc_loss",
+#             criterion_key="acc_loss_fn",
+#         ),
     ]
 
 
@@ -82,7 +83,7 @@ def train(
     else:
         engine = CPUEngine()
 
-    runner = dl.SupervisedRunner(
+    runner = SupervisedOCRRunner(
         input_key="image", 
         target_key="target", 
         output_key="output",
@@ -111,7 +112,7 @@ def train(
         load_best_on_end=True,
     )
     
-    runner = dl.SupervisedRunner(
+    runner = SupervisedOCRRunner(
         input_key="image", 
         target_key="target", 
         output_key="output",
