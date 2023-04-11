@@ -21,24 +21,12 @@ train_callbacks = [
         metric_key="loss",
         criterion_key="ctc_loss_fn",
     ),
-#     dl.BatchTransformCallback(
-#         transform=get_code,
-#         scope="on_batch_end",
-#         input_key="output",
-#         output_key="pred_code",
-#     ),
-#     dl.BatchTransformCallback(
-#         transform=lambda x : torch.LongTensor(x[0]),
-#         scope="on_batch_end",
-#         input_key="target",
-#         output_key="target_code",
-#     ),
-#     dl.CriterionCallback(
-#         input_key="pred_code",             
-#         target_key="target_code",     
-#         metric_key="acc_loss",
-#         criterion_key="acc_loss_fn",
-#     ),
+    dl.CriterionCallback(
+        input_key="pred_codes",
+        target_key="target",
+        metric_key="accuracy",
+        criterion_key="acc_fn",
+    ),
     dl.CheckpointCallback(
         logdir=config.gen_checkpoints_dir,
         loader_key="valid",
@@ -79,7 +67,7 @@ def train(
     )
     loaders = {"train": train_loader, "valid": valid_loader}
     model = CRNN(**config.model_kwargs)
-    optimizer = config.optimizer(params=model.parameters(), lr=0.0005)
+    optimizer = config.optimizer(params=model.parameters(), lr=0.0001)
     if clearml:
         clearml_logger = ClearMLLogger(config, config.pretrain_name)
         loggers={"_clearml": clearml_logger}
@@ -93,7 +81,7 @@ def train(
         
     criterion = {
         "ctc_loss_fn": config.ctc_loss,
-        "acc_loss_fn": config.acc_loss,
+        "acc_fn": config.acc_fn,
     }
     runner = SupervisedOCRRunner(
         input_key="image", 

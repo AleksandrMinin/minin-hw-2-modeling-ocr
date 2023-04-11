@@ -23,24 +23,12 @@ def get_base_callbacks() -> tp.List[Callback]:
             metric_key="loss",
             criterion_key="ctc_loss_fn",
         ),
-#         dl.BatchTransformCallback(
-#             transform=get_code,
-#             scope="on_batch_end",
-#             input_key="output",
-#             output_key="pred_code",
-#         ),
-#         dl.BatchTransformCallback(
-#             transform=lambda x : torch.LongTensor(x[0]),
-#             scope="on_batch_end",
-#             input_key="target",
-#             output_key="target_code",
-#         ),
-#         dl.CriterionCallback(
-#             input_key="pred_code",
-#             target_key="target_code",
-#             metric_key="acc_loss",
-#             criterion_key="acc_loss_fn",
-#         ),
+        dl.CriterionCallback(
+            input_key="pred_codes",
+            target_key="target",
+            metric_key="accuracy",
+            criterion_key="acc_fn",
+        ),
     ]
 
 
@@ -62,7 +50,7 @@ def get_train_callbacks() -> tp.List[Callback]:
 def train(
     config: Config, 
     clearml: bool = True, 
-    pretrained: bool = True,
+    pretrained: bool = False,
 ):
     loaders, infer_loader = get_loaders(config)  
     model = CRNN(**config.model_kwargs)
@@ -91,7 +79,7 @@ def train(
 
     criterion = {
         "ctc_loss_fn": config.ctc_loss,
-        "acc_loss_fn": config.acc_loss,
+        "acc_fn": config.acc_fn,
     }
 
     runner.train(
