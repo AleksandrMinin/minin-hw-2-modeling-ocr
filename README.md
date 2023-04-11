@@ -74,7 +74,9 @@ CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 nohup python train.py > log.out
 CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 python train.py
 ```
 Лучшую модель необходимо сохранить в ./weights/model.best.pth
-
+### Замечания по обучению
+- В качестве основной аугментации был выбран Resize, а не Padding, так как с таким датасетом не получилось нормально обучить модель с Padding. Думаю, что основной причиной является слишком разные пропорции входных изображений штрих-кодов.
+- Размер изображения 256 x 2048 после аугментаций был выбран таким образом, чтобы выходной вектор после выполнения argmax был размером 64. Минимальный вектор для 14 цифр равен 14 x 3 = 42, сделал чуть больше для лучшей сходимости модели.
 ### ClearML
 Метрики и конфигурации экспериментов:
 1. [pretrain_1](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/36642f3b700146f08b85bb1eca66a4b0/output/execution)
@@ -82,8 +84,9 @@ CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 python train.py
 3. [experiment_2](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/4813cb246310461aa472ee0ae26218e0/output/execution)
 4. [pretrain_3](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/893548adf1a44a1cb1d71b628beb6057/output/execution)
 5. [experiment_3](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/5fbc6dd692a44930a1e9be150856c1a3/output/execution)
-6.[pretrain_4](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/ab092967fdbc47f39dc84331513fddd8/output/execution)
-7.[experiment_4](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/2c28186938344180bb7c9d7986d69a8e/output/execution)
+6. [pretrain_4](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/ab092967fdbc47f39dc84331513fddd8/output/execution)
+7. [experiment_4](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/2c28186938344180bb7c9d7986d69a8e/output/execution)
+8. [experiment_5](https://app.clear.ml/projects/f86aa4664160426aa4f0e91fd4d061f8/experiments/2e971f7848cd4571ae0519c44eb27dcc/output/execution)
 
 ### DVC
 #### Добавление модели в DVC

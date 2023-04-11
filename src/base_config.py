@@ -14,7 +14,7 @@ class Config:
     seed: int
     max_code_len: int
     ctc_loss: tp.Callable
-    acc_loss: tp.Callable
+    acc_fn: tp.Callable
     device: str
     optimizer: type(Optimizer)
     optimizer_kwargs: tp.Mapping

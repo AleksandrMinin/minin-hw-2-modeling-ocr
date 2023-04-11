@@ -3,50 +3,57 @@ import albumentations as albu
 import torch
 from torch.nn import CTCLoss
 from torch.optim.lr_scheduler import MultiStepLR
-import cv2
 
 from src.base_config import Config
 from src.constants import DF_PATH, BACKGROUNDS_DIR, TRAIN_IMAGES_PATH
 from src.losses import my_accuracy
+import cv2
 
-
-EXP_NUM = "4"
+EXP_NUM = "5"
 NUM_CLASSES = 11
-OUTPUT_LEN = 63
-N_EPOCHS = 100
-BATCH_SIZE = 16
+N_EPOCHS = 60
+BATCH_SIZE = 8
 TRAIN_SIZE = 0.8
-IMG_HEIGHT = 280
-IMG_WIDTH = 1640
+OUTPUT_LEN = 20
+IMG_HEIGHT = 256
+IMG_WIDTH = 2048
+PAD = 100
+
 
 date_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
 train_augmentation = albu.Compose(
     [
-        albu.MotionBlur(blur_limit=15, p=0.5),
-        albu.GaussianBlur(),
-        albu.SmallestMaxSize(max_size=IMG_HEIGHT),
-        albu.CropAndPad(percent=(-0.5, 0, 0, 0)),
-        albu.PadIfNeeded(
-            min_height=IMG_HEIGHT,
-            min_width=IMG_WIDTH,
-            position="random",
-            border_mode=cv2.BORDER_CONSTANT,
-            p=1,       
+        albu.ToGray(p=1),
+        albu.RandomCropFromBorders(
+            crop_left=0,
+            crop_right=0,
+            crop_top=0.7,
+            crop_bottom=0,
         ),
         albu.Resize(height=IMG_HEIGHT, width=IMG_WIDTH),
+        albu.PadIfNeeded(
+            min_height=IMG_HEIGHT + PAD,
+            min_width=IMG_WIDTH + PAD,
+            border_mode=cv2.BORDER_CONSTANT,
+            p=1,
+        ),
+        albu.Resize(height=IMG_HEIGHT, width=IMG_WIDTH),
+        albu.MotionBlur(),
+        albu.GaussianBlur(),
+        albu.ImageCompression(10, 30),
     ])
 
 val_augmentation = albu.Compose(
     [
-        albu.SmallestMaxSize(max_size=IMG_HEIGHT),
+        albu.ToGray(p=1),
         albu.CropAndPad(percent=(-0.5, 0, 0, 0)),
+        albu.Resize(height=IMG_HEIGHT, width=IMG_WIDTH),
         albu.PadIfNeeded(
-            min_height=IMG_HEIGHT, 
-            min_width=IMG_WIDTH,
+            min_height=IMG_HEIGHT + PAD,
+            min_width=IMG_WIDTH + PAD,
             border_mode=cv2.BORDER_CONSTANT,
-            position="top_left",
-            p=1,       
+            p=1,
         ),
         albu.Resize(height=IMG_HEIGHT, width=IMG_WIDTH),
     ])
@@ -56,17 +63,17 @@ config = Config(
     num_workers=6,
     seed=42,
     max_code_len=14,
-    ctc_loss=CTCLoss(),
-    acc_loss=my_accuracy,
+    ctc_loss=CTCLoss(zero_infinity=True),
+    acc_fn=my_accuracy,
     device="cuda",
     optimizer=torch.optim.AdamW,
     optimizer_kwargs={
-        "lr": 1e-3,
-        "weight_decay": 1e-5,
+        "lr": 1e-4,
+        "weight_decay": 1e-3,
     },
     scheduler=MultiStepLR,
     scheduler_kwargs={
-        "milestones": [5, 25],
+        "milestones": [25, 35, 45],
         "gamma": 0.1,
     },
     df_path=DF_PATH,
@@ -83,14 +90,14 @@ config = Config(
     model_kwargs={
         "cnn_backbone_name": "resnet18d",
         "cnn_backbone_pretrained": False,
-        "cnn_output_size": 4608,
-        "rnn_features_num": 128,
+        "cnn_output_size": 4096,
+        "rnn_features_num": 2048,
         "rnn_dropout": 0.1,
         "rnn_bidirectional": True,
         "rnn_num_layers": 2,
         "num_classes": NUM_CLASSES,
     },
-    log_metrics=["loss"],
+    log_metrics=["loss", "accuracy"],
     valid_metric="loss",
     minimize_metric=True,
     project_name="BboxOCR",

@@ -2,6 +2,7 @@ import os
 import random
 from typing import Optional, Tuple
 import numpy as np
+from numpy.random import randint
 import torch
 import albumentations as albu
 import cv2
@@ -27,14 +28,14 @@ def generate_barcode(
     barcode_mask = 255 - cv2.cvtColor(np.asarray(barcode_mask), cv2.COLOR_RGB2GRAY)
     h, w = barcode_mask.shape
     barcode_image = np.zeros((h, w, 3))
-    image_res, mask = overlay(
+    image, mask = overlay(
         background, 
         barcode_image, 
         barcode_mask,
-        transforms=transforms,
     )
+    image = transforms(image=image)['image'] 
     
-    return image_res, fullcode
+    return image, fullcode
 
 
 class GenBarcodeDataset(torch.utils.data.Dataset):
@@ -45,11 +46,8 @@ class GenBarcodeDataset(torch.utils.data.Dataset):
     
     def __getitem__(self, i: int):
         # длина штрих-кода от 8 до 13 цифр
-        n_digits = np.random.randint(7, 13)
-        min_num = float('1e' + str(n_digits))
-        max_num = float('1e' + str(n_digits + 1))
-        value = str(np.random.randint(min_num, max_num))
-
+        value = [str(randint(10)) for _ in range(randint(8, 14))]
+        value = ''.join(value)
         image, fullcode = generate_barcode(value, 
                                            self.backgrounds_dir, 
                                            self.transforms)
@@ -59,7 +57,7 @@ class GenBarcodeDataset(torch.utils.data.Dataset):
         # прибавляем 1 ко всем цифрам штрих-кода, чтобы при обучении разделителем был 0
         target = np.array([n + 1 for n in fullcode] + [0] * (14 - len(fullcode)))
         
-        return {"image": image, "target": target, "target_len": len(target)}
+        return {"image": image, "target": target, "target_len": len(fullcode)}
     
     def __len__(self):
         return self.epoch_size

@@ -24,6 +24,7 @@ class ClearMLLogger(ILogger):
         task = Task.init(
             project_name=config.project_name,
             task_name=experiment_name,
+            auto_connect_frameworks=False,
         )
         task.connect(config.to_dict())
         self.clearml_logger = task.get_logger()
