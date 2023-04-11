@@ -1,0 +1,4 @@
+/.ipynb_checkpoints/
+/__pycache__/
+/pretrain_crnn.ipynb
+/pretrain_crnn_catalyst.ipynb
