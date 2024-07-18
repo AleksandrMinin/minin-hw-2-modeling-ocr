@@ -1,0 +1,8 @@
+[core]
+    remote = myremote
+[cache]
+    type = "hardlink,symlink"
+['remote "myremote"']
+    url = ssh://91.206.15.25/home/aleksandrminin/dvc_files
+    user = aleksandrminin
+    keyfile = /home/minin/.ssh/id_rsa
